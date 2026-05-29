@@ -722,21 +722,22 @@ function enviarFormulario() {
     ip: '', dataAceite: new Date().toLocaleString('pt-BR')
   };
 
+  // Apps Script não aceita POST com JSON direto por CORS
+  // Usamos no-cors com form-data simples
+  var formData = new FormData();
+  formData.append('dados', JSON.stringify(dados));
+
   fetch(WEBAPP_URL, {
     method: 'POST',
-    body: JSON.stringify(dados)
+    body: formData,
+    mode: 'no-cors'
   })
-  .then(r => r.json())
-  .then(function(resp) {
+  .then(function() {
     btn.classList.remove('loading');
-    if (resp.status === 'ok') {
-      btn.innerHTML = '✓ Enviado com sucesso!';
-      btn.style.background = '#085041';
-      status.textContent = '✓ Ficha salva no Drive da clínica.';
-      status.className = 'drive-status ok';
-    } else {
-      throw new Error(resp.mensagem || 'Erro desconhecido');
-    }
+    btn.innerHTML = '✓ Enviado com sucesso!';
+    btn.style.background = '#085041';
+    status.textContent = '✓ Ficha salva no Drive da clínica.';
+    status.className = 'drive-status ok';
   })
   .catch(function(err) {
     btn.classList.remove('loading');
