@@ -722,16 +722,11 @@ function enviarFormulario() {
     ip: '', dataAceite: new Date().toLocaleString('pt-BR')
   };
 
-  // Apps Script não aceita POST com JSON direto por CORS
-  // Usamos no-cors com form-data simples
-  var formData = new FormData();
-  formData.append('dados', JSON.stringify(dados));
+  // Envia via GET com dados codificados na URL
+  var params = encodeURIComponent(JSON.stringify(dados));
+  var url = WEBAPP_URL + '?dados=' + params;
 
-  fetch(WEBAPP_URL, {
-    method: 'POST',
-    body: formData,
-    mode: 'no-cors'
-  })
+  fetch(url, { method: 'GET', mode: 'no-cors' })
   .then(function() {
     btn.classList.remove('loading');
     btn.innerHTML = '✓ Enviado com sucesso!';
