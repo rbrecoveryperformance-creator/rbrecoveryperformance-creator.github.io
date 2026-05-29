@@ -68,7 +68,7 @@
   .row3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
   @media(max-width: 480px) { .row2, .row3 { grid-template-columns: 1fr; } }
 
-  .radio-g { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+  .radio-g { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
   .radio-g label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); cursor: pointer; }
   .radio-g input { accent-color: var(--green); }
   .chk-g { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
@@ -86,7 +86,7 @@
   .divider { height: 1px; background: var(--gray); margin: 16px 0; }
 
   /* SIGNATURE */
-  .sig-outer { border: 1.5px dashed var(--green); border-radius: 8px; height: 90px; position: relative; overflow: hidden; background: var(--gray); cursor: crosshair; }
+  .sig-outer { border: 1.5px dashed var(--green); border-radius: 8px; height: 120px; position: relative; overflow: hidden; background: var(--gray); cursor: crosshair; -webkit-user-select: none; user-select: none; }
   .sig-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-muted); pointer-events: none; }
   .sig-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
   .sig-clear { margin-top: 6px; background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; font-size: 11px; color: var(--text-muted); cursor: pointer; font-family: inherit; }
@@ -648,8 +648,9 @@ function salvarNoDrive() {
   var btn = document.getElementById('driveBtn');
   var status = document.getElementById('driveStatus');
   btn.classList.add('loading');
-  btn.textContent = 'Salvando...';
-  status.textContent = '';
+  btn.textContent = 'Aguarde...';
+  status.textContent = 'Conectando ao Google...';
+  status.className = 'drive-status';
 
   carregarGApi(function() {
     if (!accessToken) {
@@ -658,18 +659,20 @@ function salvarNoDrive() {
         scope: 'https://www.googleapis.com/auth/drive.file',
         callback: function(resp) {
           if (resp.error) {
-            status.textContent = 'Erro de autenticação.';
+            status.textContent = 'Erro: ' + resp.error + '. Tente novamente.';
             status.className = 'drive-status err';
             btn.classList.remove('loading');
-            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg> Salvar PDF no Google Drive';
+            btn.textContent = 'Salvar PDF no Google Drive';
             return;
           }
           accessToken = resp.access_token;
+          status.textContent = 'Gerando PDF...';
           enviarParaDrive(btn, status);
         }
       });
       client.requestAccessToken();
     } else {
+      status.textContent = 'Gerando PDF...';
       enviarParaDrive(btn, status);
     }
   });
@@ -757,23 +760,32 @@ function filtrarArquivos() {
 // ---- ASSINATURAS ----
 function initSig(cid, aid, hid) {
   var c = document.getElementById(cid), a = document.getElementById(aid), h = document.getElementById(hid);
-  setTimeout(function() {
-    c.width = a.offsetWidth; c.height = a.offsetHeight;
-    var ctx = c.getContext('2d'), dn = false;
-    ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+  function setupCanvas() {
+    var rect = a.getBoundingClientRect();
+    var w = rect.width || a.offsetWidth || 300;
+    var hh = rect.height || a.offsetHeight || 120;
+    c.width = w * (window.devicePixelRatio || 1);
+    c.height = hh * (window.devicePixelRatio || 1);
+    c.style.width = w + 'px';
+    c.style.height = hh + 'px';
+    var ctx = c.getContext('2d');
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    var dn = false;
     function gp(e) {
-      var r = c.getBoundingClientRect(), sx = c.width/r.width, sy = c.height/r.height;
-      if (e.touches) return {x:(e.touches[0].clientX-r.left)*sx, y:(e.touches[0].clientY-r.top)*sy};
-      return {x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy};
+      var r = c.getBoundingClientRect();
+      if (e.touches) return {x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top};
+      return {x: e.clientX - r.left, y: e.clientY - r.top};
     }
     c.addEventListener('mousedown', e => { dn=true; var p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
     c.addEventListener('mousemove', e => { if(!dn) return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); h.style.opacity='0'; });
     c.addEventListener('mouseup', () => dn=false);
     c.addEventListener('mouseleave', () => dn=false);
-    c.addEventListener('touchstart', e => { e.preventDefault(); dn=true; var p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
-    c.addEventListener('touchmove', e => { e.preventDefault(); if(!dn) return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); h.style.opacity='0'; }, {passive:false});
-    c.addEventListener('touchend', () => dn=false);
-  }, 200);
+    c.addEventListener('touchstart', e => { e.preventDefault(); dn=true; var p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); h.style.opacity='0'; }, {passive:false});
+    c.addEventListener('touchmove', e => { e.preventDefault(); if(!dn) return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
+    c.addEventListener('touchend', e => { e.preventDefault(); dn=false; }, {passive:false});
+  }
+  setTimeout(setupCanvas, 400);
 }
 
 function clrSig(cid, hid) {
