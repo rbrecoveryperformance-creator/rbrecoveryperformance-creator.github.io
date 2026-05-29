@@ -722,8 +722,11 @@ function enviarFormulario() {
     ip: '', dataAceite: new Date().toLocaleString('pt-BR')
   };
 
-  // Envia via GET com dados codificados na URL
-  var params = encodeURIComponent(JSON.stringify(dados));
+  // Remove assinaturas do envio via URL (muito grandes)
+  // As assinaturas ficam só no PDF local (botão Baixar PDF)
+  var dadosEnvio = JSON.parse(JSON.stringify(dados));
+  delete dadosEnvio.sig1; delete dadosEnvio.sig2; delete dadosEnvio.sig3;
+  var params = encodeURIComponent(JSON.stringify(dadosEnvio));
   var url = WEBAPP_URL + '?dados=' + params;
 
   fetch(url, { method: 'GET', mode: 'no-cors' })
