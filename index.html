@@ -69,7 +69,8 @@
   @media(max-width: 480px) { .row2, .row3 { grid-template-columns: 1fr; } }
 
   .radio-g { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
-  .radio-g label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); cursor: pointer; }
+  .radio-g label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); cursor: pointer; line-height: 1.3; }
+  .radio-g input[type=radio] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--green); margin: 0; cursor: pointer; }
   .radio-g input { accent-color: var(--green); }
   .chk-g { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
   .chk-g label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); cursor: pointer; line-height: 1.4; }
@@ -351,7 +352,7 @@
     <div class="card success">
       <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
       <h2>Admissão concluída!</h2>
-      <p>Formulários preenchidos com sucesso.<br>Salve o PDF no Google Drive da clínica.</p>
+      <p>Formulários preenchidos com sucesso.<br>Clique abaixo para enviar para a clínica.</p>
       <div class="success-tags">
         <span class="stag">✓ Anamnese</span>
         <span class="stag">✓ Consentimento</span>
@@ -359,13 +360,13 @@
         <span class="stag">✓ Uso de imagem</span>
       </div>
 
-      <button class="drive-btn" id="driveBtn" onclick="salvarNoDrive()">
+      <button class="drive-btn" id="driveBtn" onclick="enviarFormulario()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-        Salvar PDF no Google Drive
+        Enviar para a clínica
       </button>
       <button class="pdf-btn" onclick="baixarPDF()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Baixar PDF
+        Baixar minha cópia em PDF
       </button>
       <div class="drive-status" id="driveStatus"></div>
       <button class="btn-new" onclick="resetar()">+ Novo preenchimento</button>
@@ -390,11 +391,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="margin: 0 auto 12px; display:block; color: #1D9E75"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
       <h3>Conectar ao Google Drive</h3>
       <p>Para visualizar os arquivos de pacientes salvos,<br>conecte-se com a conta Google da clínica.</p>
-      <button class="connect-btn" onclick="conectarDrive()">
+      <button class="connect-btn" onclick="window.open('https://drive.google.com/drive/folders/1SOwBFMpLPo2TZHLByNS1vJlhf6F5ggQq','_blank')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        Entrar com Google
+        Abrir pasta no Drive
       </button>
-      <p style="margin-top:12px; font-size:11px; color:#aaa">Configure seu CLIENT_ID na linha 12 do arquivo index.html</p>
+      <p style="margin-top:12px; font-size:11px; color:#aaa">Acesse diretamente sua pasta no Google Drive</p>
     </div>
   </div>
 
@@ -413,13 +414,11 @@
 // ============================================================
 // ⚙️ CONFIGURAÇÃO — substitua pelos seus valores reais
 // ============================================================
-var GOOGLE_CLIENT_ID = "809478846320-irg91pjaoi8klnal8bia0ek87j9cjth4.apps.googleusercontent.com";
-var DRIVE_FOLDER_ID  = "1SOwBFMpLPo2TZHLByNS1vJlhf6F5ggQq";  // pasta "RB² — Pacientes"
+var WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwoRdjfFCafFEkgSYYYgldvxjwoD0v8Aye1dtiQrtPrdxEV4MaaQQPJiLr3K0veDSei/exec"; // URL do Apps Script Web App
 // ============================================================
 
 var curStep = 0;
 var dadosPaciente = {};
-var accessToken = null;
 var todosArquivos = [];
 
 // ---- NAVEGAÇÃO DE VIEWS ----
@@ -428,7 +427,7 @@ function showView(v) {
   document.getElementById('view' + (v === 'form' ? 'Form' : 'Painel')).classList.add('active');
   document.getElementById('navForm').classList.toggle('active', v === 'form');
   document.getElementById('navPainel').classList.toggle('active', v === 'painel');
-  if (v === 'painel' && accessToken) carregarArquivos();
+  if (v === 'painel') carregarArquivos();
 }
 
 // ---- PROGRESSO DO FORMULÁRIO ----
@@ -618,119 +617,56 @@ function baixarPDF() {
   doc.save(nome + '_' + dadosPaciente.data.replace(/\//g,'') + '.pdf');
 }
 
-// ---- GOOGLE DRIVE ----
-function carregarGApi(callback) {
-  if (window.google && window.google.accounts) { callback(); return; }
-  var s = document.createElement('script');
-  s.src = 'https://accounts.google.com/gsi/client';
-  s.onload = callback;
-  document.head.appendChild(s);
-}
-
-function conectarDrive() {
-  carregarGApi(function() {
-    var client = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file',
-      callback: function(resp) {
-        if (resp.error) { alert('Erro de autenticação: ' + resp.error); return; }
-        accessToken = resp.access_token;
-        document.getElementById('painelConnect').classList.add('hidden');
-        document.getElementById('painelFiles').classList.remove('hidden');
-        carregarArquivos();
-      }
-    });
-    client.requestAccessToken();
-  });
-}
-
-function salvarNoDrive() {
+// ---- ENVIO AO WEB APP ----
+function enviarFormulario() {
   var btn = document.getElementById('driveBtn');
   var status = document.getElementById('driveStatus');
   btn.classList.add('loading');
-  btn.textContent = 'Aguarde...';
-  status.textContent = 'Conectando ao Google...';
+  btn.textContent = 'Enviando...';
+  status.textContent = 'Enviando para a clínica...';
   status.className = 'drive-status';
 
-  carregarGApi(function() {
-    if (!accessToken) {
-      var client = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: 'https://www.googleapis.com/auth/drive.file',
-        callback: function(resp) {
-          if (resp.error) {
-            status.textContent = 'Erro: ' + resp.error + '. Tente novamente.';
-            status.className = 'drive-status err';
-            btn.classList.remove('loading');
-            btn.textContent = 'Salvar PDF no Google Drive';
-            return;
-          }
-          accessToken = resp.access_token;
-          status.textContent = 'Gerando PDF...';
-          enviarParaDrive(btn, status);
-        }
-      });
-      client.requestAccessToken();
-    } else {
-      status.textContent = 'Gerando PDF...';
-      enviarParaDrive(btn, status);
-    }
-  });
-}
+  var dados = {
+    nome: dadosPaciente.nome, nasc: dadosPaciente.nasc,
+    sexo: dadosPaciente.sexo, cpf: dadosPaciente.cpf,
+    wpp: dadosPaciente.wpp, email: dadosPaciente.email,
+    queixa: dadosPaciente.queixa, inicio: dadosPaciente.inicio,
+    dor: dadosPaciente.dor, doencas: dadosPaciente.doencas,
+    cirurgia: dadosPaciente.cirurgia, meds: dadosPaciente.meds,
+    atv: dadosPaciente.atv, restricao: dadosPaciente.restricao,
+    restricaoDesc: dadosPaciente.restricaoDesc, lgpd: dadosPaciente.lgpd,
+    lgpdWpp: dadosPaciente.lgpdWpp, lgpdEmail: dadosPaciente.lgpdEmail,
+    imgClinica: dadosPaciente.imgClinica, imgAnon: dadosPaciente.imgAnon,
+    imgId: dadosPaciente.imgId
+  };
 
-function enviarParaDrive(btn, status) {
-  var doc = gerarPDF();
-  var pdfBlob = doc.output('blob');
-  var nome = dadosPaciente.nome.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
-  var nomeArquivo = nome + '_' + dadosPaciente.data.replace(/\//g,'') + '.pdf';
-
-  var metadata = { name: nomeArquivo, mimeType: 'application/pdf', parents: [DRIVE_FOLDER_ID] };
-  var form = new FormData();
-  form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
-  form.append('file', pdfBlob);
-
-  fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+  fetch(WEBAPP_URL, {
     method: 'POST',
-    headers: { Authorization: 'Bearer ' + accessToken },
-    body: form
+    body: JSON.stringify(dados)
   })
   .then(r => r.json())
-  .then(function(data) {
+  .then(function(resp) {
     btn.classList.remove('loading');
-    if (data.id) {
-      btn.innerHTML = '✓ Salvo no Drive!';
+    if (resp.status === 'ok') {
+      btn.innerHTML = '✓ Enviado com sucesso!';
       btn.style.background = '#085041';
-      status.textContent = '✓ Arquivo "' + nomeArquivo + '" salvo com sucesso.';
+      status.textContent = '✓ Ficha salva no Drive da clínica.';
       status.className = 'drive-status ok';
     } else {
-      throw new Error('Sem ID no retorno');
+      throw new Error(resp.mensagem || 'Erro desconhecido');
     }
   })
   .catch(function(err) {
     btn.classList.remove('loading');
-    btn.innerHTML = 'Salvar PDF no Google Drive';
-    status.textContent = 'Erro ao salvar. Verifique o CLIENT_ID e FOLDER_ID.';
+    btn.textContent = 'Enviar para a clínica';
+    status.textContent = 'Erro ao enviar. Tente novamente.';
     status.className = 'drive-status err';
   });
 }
 
 function carregarArquivos() {
-  document.getElementById('filesLoading').classList.remove('hidden');
-  document.getElementById('filesGrid').classList.add('hidden');
-  document.getElementById('filesEmpty').classList.add('hidden');
-
-  fetch("https://www.googleapis.com/drive/v3/files?q='" + DRIVE_FOLDER_ID + "'+in+parents+and+trashed=false&fields=files(id,name,createdTime)&orderBy=createdTime+desc", {
-    headers: { Authorization: 'Bearer ' + accessToken }
-  })
-  .then(r => r.json())
-  .then(function(data) {
-    document.getElementById('filesLoading').classList.add('hidden');
-    todosArquivos = data.files || [];
-    renderizarArquivos(todosArquivos);
-  })
-  .catch(function() {
-    document.getElementById('filesLoading').textContent = 'Erro ao carregar. Tente novamente.';
-  });
+  document.getElementById('filesLoading').classList.add('hidden');
+  document.getElementById('filesEmpty').classList.remove('hidden');
 }
 
 function renderizarArquivos(lista) {
