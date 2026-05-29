@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RB² Recovery & Tratamento — Admissão</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-dark: #0F6E56;
+    --green-deep: #085041;
+    --green-light: #E1F5EE;
+    --green-mid: #5DCAA5;
+    --green-border: #9FE1CB;
+    --black: #0a0a0a;
+    --gray: #f4f4f4;
+    --text: #111;
+    --text-muted: #666;
+    --border: #e0e0e0;
+    --white: #fff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f0f0; color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  .nav { background: var(--black); display: flex; align-items: center; padding: 0 20px; height: 56px; position: sticky; top: 0; z-index: 100; gap: 12px; }
+  .logo-box { border: 2px solid var(--green); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
+  .logo-rb { font-size: 15px; font-weight: 700; color: var(--green); letter-spacing: -1px; }
+  .logo-sup { font-size: 8px; position: absolute; top: 4px; right: 4px; color: var(--green); }
+  .brand { display: flex; flex-direction: column; }
+  .brand-name { font-size: 12px; font-weight: 700; color: var(--green); letter-spacing: 1px; }
+  .brand-sub { font-size: 9px; color: var(--green-mid); letter-spacing: 1px; }
+  .nav-spacer { flex: 1; }
+  .nav-btn { background: none; border: 1px solid var(--green); border-radius: 6px; color: var(--green); font-size: 11px; padding: 5px 12px; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 5px; transition: all 0.2s; }
+  .nav-btn:hover, .nav-btn.active { background: var(--green); color: var(--black); }
+  .nav-btn svg { width: 14px; height: 14px; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* FORM APP */
+  .form-wrap { max-width: 680px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* PROGRESS */
+  .progress { display: flex; gap: 4px; margin-bottom: 20px; }
+  .prog-seg { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+  .prog-seg.done { background: var(--green); }
+  .prog-seg.active { background: var(--green); opacity: 0.5; }
+  .step-label { font-size: 11px; color: var(--text-muted); margin-bottom: 16px; }
+
+  /* CARD */
+  .card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 12px; }
+  .sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--gray); }
+  .sec-num { width: 30px; height: 30px; border-radius: 6px; background: var(--black); border: 1.5px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--green); flex-shrink: 0; }
+  .sec-title { font-size: 16px; font-weight: 600; color: var(--text); }
+  .sec-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* FIELDS */
+  .fg { margin-bottom: 14px; }
+  .fg label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 5px; font-weight: 500; }
+  .fg label.req::after { content: " *"; color: #e53; }
+  .fg input, .fg select, .fg textarea { width: 100%; padding: 9px 11px; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--white); color: var(--text); font-family: inherit; transition: border-color 0.2s; }
+  .fg input:focus, .fg select:focus, .fg textarea:focus { outline: none; border-color: var(--green); }
+  .fg textarea { resize: vertical; min-height: 76px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+  @media(max-width: 480px) { .row2, .row3 { grid-template-columns: 1fr; } }
+
+  .radio-g { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+  .radio-g label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); cursor: pointer; }
+  .radio-g input { accent-color: var(--green); }
+  .chk-g { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .chk-g label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); cursor: pointer; line-height: 1.4; }
+  .chk-g input[type=checkbox] { width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; accent-color: var(--green); margin: 0; }
+  .chk-g input { accent-color: var(--green); margin-top: 2px; flex-shrink: 0; }
+
+  .consent-scroll { font-size: 12px; color: var(--text-muted); line-height: 1.7; background: var(--gray); border-radius: 8px; padding: 12px; max-height: 150px; overflow-y: auto; margin-bottom: 12px; border: 1px solid var(--border); }
+  .consent-scroll p { margin-bottom: 8px; }
+  .consent-scroll p:last-child { margin: 0; }
+
+  .info-bar { display: flex; gap: 8px; align-items: flex-start; background: var(--green-light); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--green-deep); margin-bottom: 12px; line-height: 1.5; }
+  .info-bar svg { flex-shrink: 0; width: 15px; height: 15px; margin-top: 1px; }
+
+  .divider { height: 1px; background: var(--gray); margin: 16px 0; }
+
+  /* SIGNATURE */
+  .sig-outer { border: 1.5px dashed var(--green); border-radius: 8px; height: 90px; position: relative; overflow: hidden; background: var(--gray); cursor: crosshair; }
+  .sig-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-muted); pointer-events: none; }
+  .sig-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
+  .sig-clear { margin-top: 6px; background: none; border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; font-size: 11px; color: var(--text-muted); cursor: pointer; font-family: inherit; }
+
+  /* NAV BUTTONS */
+  .form-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+  .btn-back { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 10px 20px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-family: inherit; }
+  .btn-back:hover { background: var(--gray); }
+  .btn-next { background: var(--green); border: none; border-radius: 8px; padding: 11px 24px; font-size: 14px; color: var(--white); cursor: pointer; font-family: inherit; font-weight: 600; display: flex; align-items: center; gap: 7px; transition: background 0.2s; }
+  .btn-next:hover { background: var(--green-dark); }
+  .btn-finish { background: var(--black); border: 2px solid var(--green); border-radius: 8px; padding: 11px 24px; font-size: 14px; color: var(--green); cursor: pointer; font-family: inherit; font-weight: 600; display: flex; align-items: center; gap: 7px; transition: all 0.2s; }
+  .btn-finish:hover { background: var(--green); color: var(--black); }
+
+  /* SUCCESS */
+  .success { text-align: center; padding: 40px 20px; }
+  .success-icon { width: 64px; height: 64px; border-radius: 12px; background: var(--black); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .success-icon svg { width: 30px; height: 30px; color: var(--green); }
+  .success h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .success p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .success-tags { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 14px 0; }
+  .stag { font-size: 11px; padding: 4px 12px; border-radius: 4px; background: var(--green-light); color: var(--green-deep); border: 1px solid var(--green-border); }
+  .drive-btn { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 16px auto 10px; background: var(--green); color: var(--white); border: none; border-radius: 10px; padding: 13px 28px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; max-width: 320px; width: 100%; transition: background 0.2s; }
+  .drive-btn:hover { background: var(--green-dark); }
+  .drive-btn svg { width: 20px; height: 20px; }
+  .drive-btn.loading { opacity: 0.7; cursor: wait; }
+  .pdf-btn { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 auto 8px; background: none; color: var(--green); border: 1px solid var(--green); border-radius: 10px; padding: 11px 28px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; max-width: 320px; width: 100%; transition: all 0.2s; }
+  .pdf-btn:hover { background: var(--green-light); }
+  .btn-new { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 9px 20px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-family: inherit; display: block; margin: 8px auto 0; }
+  .drive-status { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 8px; min-height: 20px; }
+  .drive-status.ok { color: var(--green); font-weight: 500; }
+  .drive-status.err { color: #e53; }
+
+  /* PAINEL */
+  .painel-wrap { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+  .painel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .painel-header h2 { font-size: 20px; font-weight: 700; flex: 1; }
+  .search-box { display: flex; align-items: center; gap: 8px; background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; }
+  .search-box input { border: none; outline: none; font-size: 13px; font-family: inherit; width: 180px; background: transparent; }
+  .search-box svg { width: 16px; height: 16px; color: var(--text-muted); }
+  .drive-connect-card { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 20px; }
+  .drive-connect-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .drive-connect-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
+  .connect-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--black); color: var(--green); border: 2px solid var(--green); border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+  .connect-btn:hover { background: var(--green); color: var(--black); }
+  .connect-btn svg { width: 18px; height: 18px; }
+  .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .file-card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 14px; cursor: pointer; transition: border-color 0.2s; }
+  .file-card:hover { border-color: var(--green); }
+  .file-icon { width: 36px; height: 36px; background: var(--green-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .file-icon svg { width: 20px; height: 20px; color: var(--green); }
+  .file-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-date { font-size: 11px; color: var(--text-muted); }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+  .empty-state svg { width: 48px; height: 48px; margin: 0 auto 12px; display: block; opacity: 0.3; }
+  .painel-loading { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; }
+
+  .hidden { display: none !important; }
+  .tag-pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; background: var(--green-light); color: var(--green-deep); border: 1px solid var(--green-border); margin-left: 8px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="logo-box"><span class="logo-rb">RB</span><span class="logo-sup">2</span></div>
+  <div class="brand"><span class="brand-name">RECOVERY & TRATAMENTO</span><span class="brand-sub">FISIOTERAPIA</span></div>
+  <div class="nav-spacer"></div>
+  <button class="nav-btn active" id="navForm" onclick="showView('form')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg>
+    Formulário
+  </button>
+  <button class="nav-btn" id="navPainel" onclick="showView('painel')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Painel
+  </button>
+</nav>
+
+<!-- ===== VIEW: FORMULÁRIO ===== -->
+<div class="view active" id="viewForm">
+<div class="form-wrap">
+  <div class="progress">
+    <div class="prog-seg active" id="ps0"></div>
+    <div class="prog-seg" id="ps1"></div>
+    <div class="prog-seg" id="ps2"></div>
+    <div class="prog-seg" id="ps3"></div>
+  </div>
+
+  <!-- ETAPA 0: ANAMNESE -->
+  <div id="step0">
+    <div class="step-label">Etapa 1 de 4 — Anamnese</div>
+    <div class="card">
+      <div class="sec-head">
+        <div class="sec-num">1</div>
+        <div><div class="sec-title">Anamnese</div><div class="sec-sub">Dados pessoais e histórico de saúde</div></div>
+      </div>
+      <div class="row3">
+        <div class="fg"><label class="req">Nome completo</label><input type="text" id="f_nome" placeholder="Nome do paciente"></div>
+        <div class="fg"><label class="req">Nascimento</label><input type="date" id="f_nasc"></div>
+        <div class="fg"><label>Sexo</label><select id="f_sexo"><option>Feminino</option><option>Masculino</option><option>Outro</option></select></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><label>CPF</label><input type="text" id="f_cpf" placeholder="000.000.000-00"></div>
+        <div class="fg"><label>WhatsApp</label><input type="tel" id="f_wpp" placeholder="(21) 90000-0000"></div>
+      </div>
+      <div class="fg"><label>E-mail</label><input type="email" id="f_email" placeholder="paciente@email.com"></div>
+      <div class="divider"></div>
+      <div class="fg"><label class="req">Queixa principal</label><textarea id="f_queixa" placeholder="Descreva o motivo da consulta..."></textarea></div>
+      <div class="row2">
+        <div class="fg"><label>Início dos sintomas</label><input type="text" id="f_inicio" placeholder="Ex.: há 3 semanas"></div>
+        <div class="fg"><label>Intensidade da dor (0–10)</label>
+          <select id="f_dor"><option value="">Selecione</option><option>0 – Sem dor</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5 – Moderada</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10 – Insuportável</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>Doenças pré-existentes</label>
+        <div class="chk-g" id="doencas">
+          <label><input type="checkbox" value="Hipertensão"> Hipertensão arterial</label>
+          <label><input type="checkbox" value="Diabetes"> Diabetes</label>
+          <label><input type="checkbox" value="Doenças cardíacas"> Doenças cardíacas</label>
+          <label><input type="checkbox" value="Osteoporose"> Osteoporose</label>
+          <label><input type="checkbox" value="Câncer"> Câncer (em tratamento ou histórico)</label>
+          <label><input type="checkbox" value="Nenhuma"> Nenhuma das anteriores</label>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="fg"><label>Cirurgias / fraturas anteriores</label><textarea id="f_cirurgia" placeholder="Descreva se houver..."></textarea></div>
+        <div class="fg"><label>Medicamentos em uso</label><textarea id="f_meds" placeholder="Nome dos medicamentos..."></textarea></div>
+      </div>
+      <div class="fg"><label>Pratica atividade física?</label>
+        <div class="radio-g">
+          <label><input type="radio" name="atv" value="Sim"> Sim</label>
+          <label><input type="radio" name="atv" value="Não"> Não</label>
+          <label><input type="radio" name="atv" value="Às vezes"> Às vezes</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-nav">
+      <span></span>
+      <button class="btn-next" onclick="goTo(1)">Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ETAPA 1: CONSENTIMENTO -->
+  <div id="step1" class="hidden">
+    <div class="step-label">Etapa 2 de 4 — Consentimento terapêutico</div>
+    <div class="card">
+      <div class="sec-head">
+        <div class="sec-num">2</div>
+        <div><div class="sec-title">Consentimento terapêutico</div><div class="sec-sub">Autorização para realização dos procedimentos</div></div>
+      </div>
+      <div class="consent-scroll">
+        <p>Eu, paciente identificado neste formulário, declaro que fui devidamente informado(a) sobre os procedimentos fisioterapêuticos que serão realizados, incluindo técnicas manuais, eletroterapia, cinesioterapia, hidroterapia e demais recursos terapêuticos aplicáveis ao meu caso clínico.</p>
+        <p>Estou ciente de que posso apresentar reações transitórias após as sessões, como dores musculares e cansaço, que fazem parte do processo terapêutico normal.</p>
+        <p>Autorizo a realização da avaliação fisioterapêutica completa, incluindo inspeção postural, testes de força, mobilidade, sensibilidade e demais procedimentos diagnósticos necessários.</p>
+        <p>Declaro que as informações prestadas são verdadeiras e que informarei ao fisioterapeuta sobre qualquer alteração no meu estado de saúde durante o tratamento.</p>
+      </div>
+      <div class="fg"><label>Restrições a algum procedimento?</label>
+        <div class="radio-g"><label><input type="radio" name="rest" value="Nenhuma restrição"> Não tenho restrições</label><label><input type="radio" name="rest" value="Com restrições"> Sim, tenho restrições</label></div>
+      </div>
+      <div class="fg"><label>Descreva as restrições</label><textarea id="f_rest" placeholder="Se houver..."></textarea></div>
+      <div class="divider"></div>
+      <div class="fg"><label class="req">Assinatura do paciente</label>
+        <div class="sig-outer" id="sa1"><span class="sig-hint" id="sh1">Assine aqui</span><canvas class="sig-canvas" id="sc1"></canvas></div>
+        <button class="sig-clear" onclick="clrSig('sc1','sh1')">Limpar assinatura</button>
+      </div>
+      <div class="row2">
+        <div class="fg"><label class="req">Data</label><input type="date" class="adate"></div>
+        <div class="fg"><label>Responsável (se menor)</label><input type="text" id="f_resp1" placeholder="Nome do responsável"></div>
+      </div>
+    </div>
+    <div class="form-nav">
+      <button class="btn-back" onclick="goTo(0)">← Voltar</button>
+      <button class="btn-next" onclick="goTo(2)">Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ETAPA 2: LGPD -->
+  <div id="step2" class="hidden">
+    <div class="step-label">Etapa 3 de 4 — LGPD</div>
+    <div class="card">
+      <div class="sec-head">
+        <div class="sec-num">3</div>
+        <div><div class="sec-title">Privacidade e LGPD</div><div class="sec-sub">Lei 13.709/2018</div></div>
+      </div>
+      <div class="info-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Seus dados são coletados exclusivamente para fins de saúde, protegidos pela LGPD e jamais comercializados.
+      </div>
+      <div class="consent-scroll">
+        <p><b>Finalidade:</b> Dados utilizados exclusivamente para avaliação, diagnóstico e acompanhamento fisioterapêutico.</p>
+        <p><b>Base legal:</b> Art. 7º, VII e art. 11, II, "f" da LGPD — tutela da saúde por profissional habilitado.</p>
+        <p><b>Compartilhamento:</b> Somente com profissionais de saúde diretamente envolvidos no seu tratamento.</p>
+        <p><b>Armazenamento:</b> Mínimo de 5 anos após o término do tratamento, conforme exigência do COFFITO.</p>
+        <p><b>Seus direitos:</b> Acesso, correção, portabilidade e exclusão dos dados (quando legalmente possível).</p>
+      </div>
+      <div class="fg"><label class="req">Autorização</label>
+        <div class="chk-g"><label><input type="checkbox" id="lgpdOk"> Autorizo o tratamento dos meus dados pessoais e de saúde conforme descrito acima.</label></div>
+      </div>
+      <div class="fg"><label>Comunicações opcionais</label>
+        <div class="chk-g">
+          <label><input type="checkbox" id="wppOk"> Lembretes de sessão por WhatsApp ou SMS.</label>
+          <label><input type="checkbox" id="emailOk"> Orientações e exercícios por e-mail.</label>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="fg"><label class="req">Assinatura do titular</label>
+        <div class="sig-outer" id="sa2"><span class="sig-hint" id="sh2">Assine aqui</span><canvas class="sig-canvas" id="sc2"></canvas></div>
+        <button class="sig-clear" onclick="clrSig('sc2','sh2')">Limpar assinatura</button>
+      </div>
+    </div>
+    <div class="form-nav">
+      <button class="btn-back" onclick="goTo(1)">← Voltar</button>
+      <button class="btn-next" onclick="goTo(3)">Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ETAPA 3: IMAGEM -->
+  <div id="step3" class="hidden">
+    <div class="step-label">Etapa 4 de 4 — Uso de imagem</div>
+    <div class="card">
+      <div class="sec-head">
+        <div class="sec-num">4</div>
+        <div><div class="sec-title">Autorização de uso de imagem</div><div class="sec-sub">Fotos e vídeos de evolução clínica</div></div>
+      </div>
+      <div class="consent-scroll">
+        <p>A RB² poderá realizar registros fotográficos e/ou videográficos durante as sessões, com a finalidade exclusiva de documentar a evolução clínica do paciente como parte do prontuário fisioterapêutico.</p>
+        <p>O uso de imagem para fins educativos, científicos ou divulgação nas redes sociais da clínica ocorrerá somente mediante autorização específica abaixo.</p>
+      </div>
+      <div class="fg"><label class="req">Registro clínico (prontuário)</label>
+        <div class="radio-g">
+          <label><input type="radio" name="imgc" value="Autoriza prontuário"> Autorizo para meu prontuário</label>
+          <label><input type="radio" name="imgc" value="Não autoriza registro"> Não autorizo nenhum registro</label>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="fg"><label>Uso educativo e redes sociais (opcional)</label>
+        <div class="chk-g">
+          <label><input type="checkbox" id="imgAnon"> Autorizo uso anônimo para fins educativos ou divulgação da RB².</label>
+          <label><input type="checkbox" id="imgId"> Autorizo uso com identificação (nome e/ou rosto) para redes sociais.</label>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="fg"><label class="req">Assinatura do paciente</label>
+        <div class="sig-outer" id="sa3"><span class="sig-hint" id="sh3">Assine aqui</span><canvas class="sig-canvas" id="sc3"></canvas></div>
+        <button class="sig-clear" onclick="clrSig('sc3','sh3')">Limpar assinatura</button>
+      </div>
+      <div class="row2">
+        <div class="fg"><label class="req">Data</label><input type="date" class="adate"></div>
+        <div class="fg"><label>Responsável (se menor)</label><input type="text" placeholder="Nome do responsável"></div>
+      </div>
+    </div>
+    <div class="form-nav">
+      <button class="btn-back" onclick="goTo(2)">← Voltar</button>
+      <button class="btn-finish" onclick="concluir()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+        Concluir admissão
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCESSO -->
+  <div id="stepDone" class="hidden">
+    <div class="card success">
+      <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h2>Admissão concluída!</h2>
+      <p>Formulários preenchidos com sucesso.<br>Salve o PDF no Google Drive da clínica.</p>
+      <div class="success-tags">
+        <span class="stag">✓ Anamnese</span>
+        <span class="stag">✓ Consentimento</span>
+        <span class="stag">✓ LGPD</span>
+        <span class="stag">✓ Uso de imagem</span>
+      </div>
+
+      <button class="drive-btn" id="driveBtn" onclick="salvarNoDrive()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        Salvar PDF no Google Drive
+      </button>
+      <button class="pdf-btn" onclick="baixarPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Baixar PDF
+      </button>
+      <div class="drive-status" id="driveStatus"></div>
+      <button class="btn-new" onclick="resetar()">+ Novo preenchimento</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== VIEW: PAINEL ===== -->
+<div class="view" id="viewPainel">
+<div class="painel-wrap">
+  <div class="painel-header">
+    <h2>Painel de pacientes</h2>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Buscar paciente..." oninput="filtrarArquivos()">
+    </div>
+  </div>
+
+  <div id="painelConnect">
+    <div class="drive-connect-card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48" style="margin: 0 auto 12px; display:block; color: #1D9E75"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      <h3>Conectar ao Google Drive</h3>
+      <p>Para visualizar os arquivos de pacientes salvos,<br>conecte-se com a conta Google da clínica.</p>
+      <button class="connect-btn" onclick="conectarDrive()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Entrar com Google
+      </button>
+      <p style="margin-top:12px; font-size:11px; color:#aaa">Configure seu CLIENT_ID na linha 12 do arquivo index.html</p>
+    </div>
+  </div>
+
+  <div id="painelFiles" class="hidden">
+    <div id="filesLoading" class="painel-loading">Carregando arquivos...</div>
+    <div id="filesGrid" class="files-grid hidden"></div>
+    <div id="filesEmpty" class="empty-state hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p>Nenhum arquivo encontrado.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// ============================================================
+// ⚙️ CONFIGURAÇÃO — substitua pelos seus valores reais
+// ============================================================
+var GOOGLE_CLIENT_ID = "809478846320-irg91pjaoi8klnal8bia0ek87j9cjth4.apps.googleusercontent.com";
+var DRIVE_FOLDER_ID  = "1SOwBFMpLPo2TZHLByNS1vJlhf6F5ggQq";  // pasta "RB² — Pacientes"
+// ============================================================
+
+var curStep = 0;
+var dadosPaciente = {};
+var accessToken = null;
+var todosArquivos = [];
+
+// ---- NAVEGAÇÃO DE VIEWS ----
+function showView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view' + (v === 'form' ? 'Form' : 'Painel')).classList.add('active');
+  document.getElementById('navForm').classList.toggle('active', v === 'form');
+  document.getElementById('navPainel').classList.toggle('active', v === 'painel');
+  if (v === 'painel' && accessToken) carregarArquivos();
+}
+
+// ---- PROGRESSO DO FORMULÁRIO ----
+function goTo(n) {
+  document.getElementById('step' + curStep).classList.add('hidden');
+  [0,1,2,3].forEach(i => {
+    var s = document.getElementById('ps' + i);
+    s.classList.remove('done','active');
+    if (i < n) s.classList.add('done');
+    else if (i === n) s.classList.add('active');
+  });
+  curStep = n;
+  document.getElementById('step' + n).classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function concluir() {
+  coletarDados();
+  document.getElementById('step3').classList.add('hidden');
+  document.getElementById('stepDone').classList.remove('hidden');
+  [0,1,2,3].forEach(i => { var s=document.getElementById('ps'+i); s.classList.remove('active'); s.classList.add('done'); });
+}
+
+function resetar() {
+  document.getElementById('stepDone').classList.add('hidden');
+  curStep = 0;
+  document.getElementById('step0').classList.remove('hidden');
+  [0,1,2,3].forEach(i => { var s=document.getElementById('ps'+i); s.classList.remove('done'); if(i===0) s.classList.add('active'); else s.classList.remove('active'); });
+  document.getElementById('driveStatus').textContent = '';
+  document.getElementById('driveStatus').className = 'drive-status';
+}
+
+// ---- COLETA DE DADOS ----
+function coletarDados() {
+  var doencas = [];
+  document.querySelectorAll('#doencas input:checked').forEach(c => doencas.push(c.value));
+  var atv = document.querySelector('input[name="atv"]:checked');
+  var rest = document.querySelector('input[name="rest"]:checked');
+  var imgc = document.querySelector('input[name="imgc"]:checked');
+
+  dadosPaciente = {
+    nome:       document.getElementById('f_nome').value || '—',
+    nasc:       document.getElementById('f_nasc').value || '—',
+    sexo:       document.getElementById('f_sexo').value || '—',
+    cpf:        document.getElementById('f_cpf').value || '—',
+    wpp:        document.getElementById('f_wpp').value || '—',
+    email:      document.getElementById('f_email').value || '—',
+    queixa:     document.getElementById('f_queixa').value || '—',
+    inicio:     document.getElementById('f_inicio').value || '—',
+    dor:        document.getElementById('f_dor').value || '—',
+    doencas:    doencas.join(', ') || '—',
+    cirurgia:   document.getElementById('f_cirurgia').value || '—',
+    meds:       document.getElementById('f_meds').value || '—',
+    atv:        atv ? atv.value : '—',
+    restricao:  rest ? rest.value : '—',
+    restricaoDesc: document.getElementById('f_rest').value || '—',
+    lgpd:       document.getElementById('lgpdOk').checked ? 'Autorizado' : 'Não autorizado',
+    lgpdWpp:    document.getElementById('wppOk').checked ? 'Sim' : 'Não',
+    lgpdEmail:  document.getElementById('emailOk').checked ? 'Sim' : 'Não',
+    imgClinica: imgc ? imgc.value : '—',
+    imgAnon:    document.getElementById('imgAnon').checked ? 'Sim' : 'Não',
+    imgId:      document.getElementById('imgId').checked ? 'Sim' : 'Não',
+    data:       new Date().toLocaleDateString('pt-BR'),
+    hora:       new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}),
+    sig1:       document.getElementById('sc1').toDataURL(),
+    sig2:       document.getElementById('sc2').toDataURL(),
+    sig3:       document.getElementById('sc3').toDataURL(),
+  };
+}
+
+// ---- GERAÇÃO DE PDF ----
+function gerarPDF() {
+  var d = dadosPaciente;
+  var { jsPDF } = window.jspdf;
+  var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  var W = 210, mg = 18, y = 0, lh = 7;
+
+  // Header preto
+  doc.setFillColor(10, 10, 10);
+  doc.rect(0, 0, W, 28, 'F');
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.setTextColor(29, 158, 117);
+  doc.text('RB² RECOVERY & TRATAMENTO', mg, 13);
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.setTextColor(93, 202, 165);
+  doc.text('FISIOTERAPIA  |  FICHA DE ADMISSÃO', mg, 21);
+  doc.setFontSize(8);
+  doc.text('Data: ' + d.data + '  ' + d.hora, W - mg, 21, {align:'right'});
+
+  y = 36;
+
+  function secTitulo(txt) {
+    doc.setFillColor(225, 245, 238);
+    doc.rect(mg, y-4, W - mg*2, 7, 'F');
+    doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.setTextColor(8, 80, 65);
+    doc.text(txt.toUpperCase(), mg + 2, y + 1);
+    y += 9;
+  }
+
+  function linha(label, val) {
+    if (y > 265) { doc.addPage(); y = 20; }
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.setTextColor(120,120,120); doc.text(label, mg, y);
+    doc.setTextColor(30,30,30);
+    var linhas = doc.splitTextToSize(val, W - mg - 80);
+    doc.text(linhas, 80, y);
+    doc.setDrawColor(220,220,220);
+    doc.line(mg, y + 2, W - mg, y + 2);
+    y += Math.max(lh, linhas.length * 5 + 2);
+  }
+
+  secTitulo('1. Dados pessoais');
+  linha('Nome completo', d.nome);
+  linha('Data de nascimento', d.nasc);
+  linha('Sexo', d.sexo);
+  linha('CPF', d.cpf);
+  linha('WhatsApp', d.wpp);
+  linha('E-mail', d.email);
+
+  y += 4;
+  secTitulo('2. Anamnese clínica');
+  linha('Queixa principal', d.queixa);
+  linha('Início dos sintomas', d.inicio);
+  linha('Intensidade da dor', d.dor);
+  linha('Doenças pré-existentes', d.doencas);
+  linha('Cirurgias / fraturas', d.cirurgia);
+  linha('Medicamentos em uso', d.meds);
+  linha('Atividade física', d.atv);
+
+  y += 4;
+  secTitulo('3. Consentimento terapêutico');
+  linha('Restrições a procedimentos', d.restricao);
+  if (d.restricaoDesc && d.restricaoDesc !== '—') linha('Descrição das restrições', d.restricaoDesc);
+
+  // Assinatura consentimento
+  try {
+    if (d.sig1 && d.sig1.length > 100) {
+      doc.addImage(d.sig1, 'PNG', mg, y, 60, 18);
+      doc.setFontSize(7); doc.setTextColor(140,140,140);
+      doc.line(mg, y+20, mg+60, y+20);
+      doc.text('Assinatura do paciente', mg, y+24);
+      y += 30;
+    }
+  } catch(e) {}
+
+  y += 4;
+  secTitulo('4. LGPD — Proteção de dados');
+  linha('Autorização LGPD', d.lgpd);
+  linha('Comunicação por WhatsApp', d.lgpdWpp);
+  linha('Orientações por e-mail', d.lgpdEmail);
+
+  y += 4;
+  secTitulo('5. Uso de imagem');
+  linha('Registro clínico', d.imgClinica);
+  linha('Uso anônimo (educativo)', d.imgAnon);
+  linha('Uso com identificação', d.imgId);
+
+  // Assinaturas finais
+  if (y > 220) { doc.addPage(); y = 20; }
+  y += 8;
+  doc.setDrawColor(29,158,117); doc.setLineWidth(0.3);
+
+  doc.line(mg, y+18, mg+70, y+18);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
+  doc.text('Assinatura do paciente', mg, y+23);
+  doc.text(d.nome, mg, y+27);
+
+  doc.line(W-mg-70, y+18, W-mg, y+18);
+  doc.text('Fisioterapeuta responsável', W-mg-70, y+23);
+  doc.text('RB² Recovery & Tratamento', W-mg-70, y+27);
+
+  // Footer
+  doc.setFillColor(10,10,10);
+  doc.rect(0, 285, W, 12, 'F');
+  doc.setFontSize(7); doc.setTextColor(93,202,165);
+  doc.text('RB² Recovery & Tratamento  |  Documento gerado automaticamente', mg, 292);
+  doc.text('Página 1', W-mg, 292, {align:'right'});
+
+  return doc;
+}
+
+function baixarPDF() {
+  coletarDados();
+  var doc = gerarPDF();
+  var nome = dadosPaciente.nome.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  doc.save(nome + '_' + dadosPaciente.data.replace(/\//g,'') + '.pdf');
+}
+
+// ---- GOOGLE DRIVE ----
+function carregarGApi(callback) {
+  if (window.google && window.google.accounts) { callback(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.onload = callback;
+  document.head.appendChild(s);
+}
+
+function conectarDrive() {
+  carregarGApi(function() {
+    var client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: function(resp) {
+        if (resp.error) { alert('Erro de autenticação: ' + resp.error); return; }
+        accessToken = resp.access_token;
+        document.getElementById('painelConnect').classList.add('hidden');
+        document.getElementById('painelFiles').classList.remove('hidden');
+        carregarArquivos();
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+function salvarNoDrive() {
+  var btn = document.getElementById('driveBtn');
+  var status = document.getElementById('driveStatus');
+  btn.classList.add('loading');
+  btn.textContent = 'Salvando...';
+  status.textContent = '';
+
+  carregarGApi(function() {
+    if (!accessToken) {
+      var client = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/drive.file',
+        callback: function(resp) {
+          if (resp.error) {
+            status.textContent = 'Erro de autenticação.';
+            status.className = 'drive-status err';
+            btn.classList.remove('loading');
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg> Salvar PDF no Google Drive';
+            return;
+          }
+          accessToken = resp.access_token;
+          enviarParaDrive(btn, status);
+        }
+      });
+      client.requestAccessToken();
+    } else {
+      enviarParaDrive(btn, status);
+    }
+  });
+}
+
+function enviarParaDrive(btn, status) {
+  var doc = gerarPDF();
+  var pdfBlob = doc.output('blob');
+  var nome = dadosPaciente.nome.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  var nomeArquivo = nome + '_' + dadosPaciente.data.replace(/\//g,'') + '.pdf';
+
+  var metadata = { name: nomeArquivo, mimeType: 'application/pdf', parents: [DRIVE_FOLDER_ID] };
+  var form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+  form.append('file', pdfBlob);
+
+  fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + accessToken },
+    body: form
+  })
+  .then(r => r.json())
+  .then(function(data) {
+    btn.classList.remove('loading');
+    if (data.id) {
+      btn.innerHTML = '✓ Salvo no Drive!';
+      btn.style.background = '#085041';
+      status.textContent = '✓ Arquivo "' + nomeArquivo + '" salvo com sucesso.';
+      status.className = 'drive-status ok';
+    } else {
+      throw new Error('Sem ID no retorno');
+    }
+  })
+  .catch(function(err) {
+    btn.classList.remove('loading');
+    btn.innerHTML = 'Salvar PDF no Google Drive';
+    status.textContent = 'Erro ao salvar. Verifique o CLIENT_ID e FOLDER_ID.';
+    status.className = 'drive-status err';
+  });
+}
+
+function carregarArquivos() {
+  document.getElementById('filesLoading').classList.remove('hidden');
+  document.getElementById('filesGrid').classList.add('hidden');
+  document.getElementById('filesEmpty').classList.add('hidden');
+
+  fetch("https://www.googleapis.com/drive/v3/files?q='" + DRIVE_FOLDER_ID + "'+in+parents+and+trashed=false&fields=files(id,name,createdTime)&orderBy=createdTime+desc", {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  })
+  .then(r => r.json())
+  .then(function(data) {
+    document.getElementById('filesLoading').classList.add('hidden');
+    todosArquivos = data.files || [];
+    renderizarArquivos(todosArquivos);
+  })
+  .catch(function() {
+    document.getElementById('filesLoading').textContent = 'Erro ao carregar. Tente novamente.';
+  });
+}
+
+function renderizarArquivos(lista) {
+  var grid = document.getElementById('filesGrid');
+  var empty = document.getElementById('filesEmpty');
+  if (!lista.length) { empty.classList.remove('hidden'); grid.classList.add('hidden'); return; }
+  grid.innerHTML = '';
+  lista.forEach(function(f) {
+    var nome = f.name.replace('.pdf','').replace(/_/g,' ');
+    var data = f.createdTime ? new Date(f.createdTime).toLocaleDateString('pt-BR') : '';
+    var card = document.createElement('div');
+    card.className = 'file-card';
+    card.innerHTML = '<div class="file-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div class="file-name">' + nome + '</div><div class="file-date">' + data + '</div>';
+    card.onclick = function() { window.open('https://drive.google.com/file/d/' + f.id + '/view', '_blank'); };
+    grid.appendChild(card);
+  });
+  grid.classList.remove('hidden');
+  empty.classList.add('hidden');
+}
+
+function filtrarArquivos() {
+  var q = document.getElementById('searchInput').value.toLowerCase();
+  var filtrado = todosArquivos.filter(f => f.name.toLowerCase().includes(q));
+  renderizarArquivos(filtrado);
+}
+
+// ---- ASSINATURAS ----
+function initSig(cid, aid, hid) {
+  var c = document.getElementById(cid), a = document.getElementById(aid), h = document.getElementById(hid);
+  setTimeout(function() {
+    c.width = a.offsetWidth; c.height = a.offsetHeight;
+    var ctx = c.getContext('2d'), dn = false;
+    ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+    function gp(e) {
+      var r = c.getBoundingClientRect(), sx = c.width/r.width, sy = c.height/r.height;
+      if (e.touches) return {x:(e.touches[0].clientX-r.left)*sx, y:(e.touches[0].clientY-r.top)*sy};
+      return {x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy};
+    }
+    c.addEventListener('mousedown', e => { dn=true; var p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+    c.addEventListener('mousemove', e => { if(!dn) return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); h.style.opacity='0'; });
+    c.addEventListener('mouseup', () => dn=false);
+    c.addEventListener('mouseleave', () => dn=false);
+    c.addEventListener('touchstart', e => { e.preventDefault(); dn=true; var p=gp(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+    c.addEventListener('touchmove', e => { e.preventDefault(); if(!dn) return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); h.style.opacity='0'; }, {passive:false});
+    c.addEventListener('touchend', () => dn=false);
+  }, 200);
+}
+
+function clrSig(cid, hid) {
+  var c = document.getElementById(cid);
+  c.getContext('2d').clearRect(0,0,c.width,c.height);
+  document.getElementById(hid).style.opacity = '1';
+}
+
+// ---- INIT ----
+window.addEventListener('load', function() {
+  initSig('sc1','sa1','sh1');
+  initSig('sc2','sa2','sh2');
+  initSig('sc3','sa3','sh3');
+  var hoje = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('.adate').forEach(d => d.value = hoje);
+});
+</script>
+</body>
+</html>
